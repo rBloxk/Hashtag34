@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
           toast.success('Login successful!');
           
           // Redirect to appropriate page based on user role
-          setTimeout(() => {
+          setTimeout(async () => {
             // Check if user is admin
             const { data: profile } = await supabase
               .from('profiles')

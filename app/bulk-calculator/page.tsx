@@ -162,7 +162,10 @@ function BulkCalculatorPageContent() {
   };
 
   const calculateTotals = () => {
-    const itemTotals = orderItems.map(item => calculateItemPrice(item));
+    const itemTotals = orderItems.map(item => ({
+      ...calculateItemPrice(item),
+      quantity: item.quantity
+    }));
     const subtotal = itemTotals.reduce((sum, item) => sum + item.totalPrice, 0);
     const totalDiscount = itemTotals.reduce((sum, item) => sum + (item.discount * item.quantity), 0);
     

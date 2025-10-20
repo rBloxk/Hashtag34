@@ -137,7 +137,7 @@ function CheckoutPageContent() {
     if (data && data.length > 0) {
       setAddresses(data);
       // Auto-select the default address or the first address
-      const defaultAddress = data.find(addr => addr.is_default);
+      const defaultAddress = data.find((addr: Address) => addr.is_default);
       if (defaultAddress) {
         setSelectedAddressId(defaultAddress.id);
         populateFormWithAddress(defaultAddress);
