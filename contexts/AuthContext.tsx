@@ -105,14 +105,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, phone?: string) => {
+    // Check if email already exists
+    const { data: existingEmailUser } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (existingEmailUser) {
+      throw new Error('An account with this email already exists. Please login or use a different email.');
+    }
+
+    // Check if phone number already exists (if provided)
+    if (phone && phone.trim()) {
+      const { data: existingPhoneUser } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (existingPhoneUser) {
+        throw new Error('An account with this phone number already exists. Please use a different phone number.');
+      }
+    }
+
+    // Sign up with email verification enabled
+    // Use production URL for email verification redirects
+    const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+      : 'https://hashtag34.vercel.app/auth/callback';
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          full_name: fullName,
+          phone: phone || null,
+        }
+      }
     });
 
     if (error) throw error;
 
+    // Check if user was created (sometimes Supabase returns success but user is null if email confirmation is required)
     if (data.user) {
+      // Create profile - only if user is confirmed or email confirmation is disabled
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
@@ -126,8 +165,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         ]);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        // If profile already exists, that's okay (might happen on retry)
+        if (!profileError.message.includes('duplicate key')) {
+          throw profileError;
+        }
+      }
     }
+
+    // Return success - user needs to verify email
+    return;
   };
 
   const signInWithPhone = async (phone: string) => {
@@ -149,12 +196,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      // Provide user-friendly error messages
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Invalid email or password. Please try again.');
+      }
+      throw error;
+    }
+
+    // Check if email is verified
+    if (data.user && !data.user.email_confirmed_at) {
+      // Sign out the user immediately
+      await supabase.auth.signOut();
+      throw new Error('Please verify your email address before logging in. Check your inbox for the verification link.');
+    }
   };
 
   const signOut = async () => {

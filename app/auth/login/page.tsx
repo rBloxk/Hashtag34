@@ -59,9 +59,48 @@ export default function LoginPage() {
       toast.success('Login successful!');
       router.push('/shop');
     } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+      const errorMessage = error.message || 'Login failed';
+      
+      // Check if it's an email verification error
+      if (errorMessage.includes('verify your email')) {
+        toast.error(errorMessage, {
+          duration: 6000,
+          action: {
+            label: 'Resend',
+            onClick: () => handleResendVerification(),
+          },
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!formData.email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      // Use production URL for email verification redirects
+      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+        : 'https://hashtag34.vercel.app/auth/callback';
+      
+      await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email,
+        options: {
+          emailRedirectTo: redirectUrl,
+        }
+      });
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (error: any) {
+      toast.error('Failed to resend verification email. Please try again later.');
     }
   };
 

@@ -32,9 +32,35 @@ export default function AuthCallbackPage() {
         }
 
         if (data.session) {
+          // Ensure profile exists (create if not exists, especially for email verification)
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.session.user.id)
+            .maybeSingle();
+          
+          if (!existingProfile) {
+            // Create profile if it doesn't exist
+            const fullName = data.session.user.user_metadata?.full_name || '';
+            const phone = data.session.user.user_metadata?.phone || null;
+            
+            await supabase
+              .from('profiles')
+              .insert([
+                {
+                  id: data.session.user.id,
+                  email: data.session.user.email!,
+                  full_name: fullName,
+                  phone: phone,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                },
+              ]);
+          }
+          
           setStatus('success');
-          setMessage('Authentication successful! Redirecting...');
-          toast.success('Login successful!');
+          setMessage('Email verified successfully! Redirecting...');
+          toast.success('Email verified! You can now login.');
           
           // Redirect to appropriate page based on user role
           setTimeout(async () => {
