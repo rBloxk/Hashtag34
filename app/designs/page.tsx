@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/AuthGuard';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,10 +21,28 @@ import {
   Grid,
   List,
   Calendar,
-  Tag
+  Tag,
+  AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { toast } from 'sonner';
+
+interface Design {
+  id: string;
+  user_id: string;
+  product_id: string | null;
+  design_data: any;
+  preview_url: string | null;
+  is_saved: boolean;
+  created_at: string;
+  updated_at: string;
+  products?: {
+    id: string;
+    name: string;
+    category: string;
+  };
+}
 
 interface SavedDesign {
   id: string;
@@ -35,6 +54,7 @@ interface SavedDesign {
   tags: string[];
   created_at: string;
   updated_at: string;
+  design_data: any;
 }
 
 export default function SavedDesignsPage() {
@@ -52,64 +72,96 @@ function SavedDesignsPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demonstration
-  const mockDesigns: SavedDesign[] = [
-    {
-      id: '1',
-      name: 'Summer Vibes T-Shirt',
-      description: 'Bright and colorful design perfect for summer',
-      image_url: '/images/designs/summer-vibes.jpg',
-      product_type: 'T-Shirt',
-      colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
-      tags: ['summer', 'colorful', 'fun'],
-      created_at: '2025-01-15T10:30:00Z',
-      updated_at: '2025-01-15T10:30:00Z'
-    },
-    {
-      id: '2',
-      name: 'Minimalist Logo Design',
-      description: 'Clean and simple logo design for corporate use',
-      image_url: '/images/designs/minimalist-logo.jpg',
-      product_type: 'Hoodie',
-      colors: ['#2C3E50', '#ECF0F1', '#E74C3C'],
-      tags: ['minimalist', 'corporate', 'logo'],
-      created_at: '2025-01-14T14:20:00Z',
-      updated_at: '2025-01-14T14:20:00Z'
-    },
-    {
-      id: '3',
-      name: 'Vintage Band Tee',
-      description: 'Retro-inspired band t-shirt design',
-      image_url: '/images/designs/vintage-band.jpg',
-      product_type: 'T-Shirt',
-      colors: ['#8B4513', '#F4A460', '#000000', '#FFFFFF'],
-      tags: ['vintage', 'music', 'retro'],
-      created_at: '2025-01-13T09:15:00Z',
-      updated_at: '2025-01-13T09:15:00Z'
-    },
-    {
-      id: '4',
-      name: 'Nature Lover Mug',
-      description: 'Beautiful nature-themed design for coffee mugs',
-      image_url: '/images/designs/nature-mug.jpg',
-      product_type: 'Mug',
-      colors: ['#228B22', '#32CD32', '#90EE90', '#8FBC8F'],
-      tags: ['nature', 'green', 'outdoor'],
-      created_at: '2025-01-12T16:45:00Z',
-      updated_at: '2025-01-12T16:45:00Z'
-    }
-  ];
+  const categories = ['All', 'T-Shirt', 'Hoodie', 'Mug', 'Custom'];
 
-  const categories = ['All', 'T-Shirt', 'Hoodie', 'Mug', 'Poster'];
-
+  // Fetch designs from Supabase
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setDesigns(mockDesigns);
+    if (!user) return;
+    
+    fetchDesigns();
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('designs-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'designs',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchDesigns();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const fetchDesigns = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('designs')
+        .select(`
+          id,
+          user_id,
+          product_id,
+          design_data,
+          preview_url,
+          is_saved,
+          created_at,
+          updated_at,
+          products (
+            id,
+            name,
+            category
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('is_saved', true)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      // Transform the data to match our SavedDesign interface
+      const transformedDesigns: SavedDesign[] = (data || []).map((design: Design) => {
+        const designData = design.design_data || {};
+        const productName = design.products?.name || 'Custom Design';
+        
+        return {
+          id: design.id,
+          name: designData.name || productName,
+          description: designData.description || `Custom ${design.products?.category || 'design'} creation`,
+          image_url: design.preview_url || '/images/placeholder-design.png',
+          product_type: design.products?.category || 'Custom',
+          colors: designData.colors || ['#000000', '#FFFFFF'],
+          tags: designData.tags || [design.products?.category?.toLowerCase() || 'custom'],
+          created_at: design.created_at,
+          updated_at: design.updated_at,
+          design_data: designData
+        };
+      });
+
+      setDesigns(transformedDesigns);
+    } catch (err: any) {
+      console.error('Error fetching designs:', err);
+      setError(err.message || 'Failed to load designs');
+      toast.error('Failed to load designs');
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
   const filteredDesigns = designs.filter(design => {
     const matchesSearch = design.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -121,21 +173,55 @@ function SavedDesignsPageContent() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleDeleteDesign = (designId: string) => {
-    if (confirm('Are you sure you want to delete this design?')) {
+  const handleDeleteDesign = async (designId: string) => {
+    if (!confirm('Are you sure you want to delete this design? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('designs')
+        .delete()
+        .eq('id', designId)
+        .eq('user_id', user!.id);
+
+      if (error) throw error;
+
+      toast.success('Design deleted successfully');
       setDesigns(prev => prev.filter(design => design.id !== designId));
+    } catch (err: any) {
+      console.error('Error deleting design:', err);
+      toast.error(err.message || 'Failed to delete design');
     }
   };
 
-  const handleDuplicateDesign = (design: SavedDesign) => {
-    const newDesign = {
-      ...design,
-      id: Date.now().toString(),
-      name: `${design.name} (Copy)`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    setDesigns(prev => [newDesign, ...prev]);
+  const handleDuplicateDesign = async (design: SavedDesign) => {
+    try {
+      const newDesignData = {
+        ...design.design_data,
+        name: `${design.name} (Copy)`,
+      };
+
+      const { data, error } = await supabase
+        .from('designs')
+        .insert({
+          user_id: user!.id,
+          product_id: null,
+          design_data: newDesignData,
+          preview_url: design.image_url,
+          is_saved: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success('Design duplicated successfully');
+      fetchDesigns(); // Refresh the list
+    } catch (err: any) {
+      console.error('Error duplicating design:', err);
+      toast.error(err.message || 'Failed to duplicate design');
+    }
   };
 
   if (authLoading) {
@@ -261,6 +347,29 @@ function SavedDesignsPageContent() {
               </Button>
             </Link>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <Card className="bg-destructive/10 border-destructive/50 mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <div>
+                    <p className="font-medium text-destructive">Error loading designs</p>
+                    <p className="text-sm text-muted-foreground">{error}</p>
+                  </div>
+                  <Button
+                    onClick={fetchDesigns}
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Designs Grid/List */}
           {loading ? (
