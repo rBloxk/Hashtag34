@@ -1,0 +1,31 @@
+import './globals.css';
+import type { Metadata } from 'next';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Toaster } from '@/components/ui/sonner';
+import { ConditionalLayout } from '@/components/ConditionalLayout';
+
+export const metadata: Metadata = {
+  title: 'Hashtag34 Stories - Custom T-Shirts & Corporate Gifting',
+  description: 'Wear Your Story. Gift a Moment. Customizable t-shirts, hoodies, and corporate gifting solutions.',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className="font-sans">
+        <AuthProvider>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
+          <Toaster />
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
