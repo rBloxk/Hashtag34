@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
             <CardContent className="text-center py-8">
               <div className="mb-4 flex flex-col items-center">
                 <Image
-                  src="/Images/logo.png"
+                  src="/images/logo.png"
                   alt="Hashtag34 Stories"
                   width={120}
                   height={60}
@@ -111,7 +111,7 @@ export default function ResetPasswordPage() {
           <CardHeader className="text-center">
             <div className="mb-4 flex flex-col items-center">
               <Image
-                src="/Images/logo.png"
+                src="/images/logo.png"
                 alt="Hashtag34 Stories"
                 width={120}
                 height={60}
