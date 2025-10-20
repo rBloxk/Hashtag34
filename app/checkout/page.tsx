@@ -479,6 +479,9 @@ function CheckoutPageContent() {
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             required
+                            pattern="[0-9+\-\s()]+"
+                            title="Please enter a valid phone number (numbers, spaces, and +- () allowed)"
+                            placeholder="+91 9876543210"
                             className="bg-background border-border text-foreground"
                           />
                         </div>
@@ -521,9 +524,13 @@ function CheckoutPageContent() {
                           <Label htmlFor="pincode" className="text-foreground">Pincode *</Label>
                           <Input
                             id="pincode"
+                            type="text"
                             value={formData.pincode}
                             onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                             required
+                            pattern="[0-9]{4,10}"
+                            title="Please enter a valid pincode (4-10 digits)"
+                            placeholder="560066"
                             className="bg-background border-border text-foreground"
                           />
                         </div>
