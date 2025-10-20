@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { ShoppingCart, User, Menu, X, Heart } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +13,12 @@ export function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => {
+    return pathname === path;
+  };
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -45,22 +52,64 @@ export function Header() {
         </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/shop" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/shop') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               Shop
             </Link>
-            <Link href="/customise" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/customise" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/customise') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               Customize
             </Link>
-            <Link href="/corporate" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/corporate" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/corporate') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               Corporate Gifting
             </Link>
-            <Link href="/bulk-calculator" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/bulk-calculator" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/bulk-calculator') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               Bulk Calculator
             </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/about" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/about') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               About
             </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors text-foreground">
+            <Link 
+              href="/contact" 
+              className={`text-sm font-medium hover:text-primary transition-colors relative ${
+                isActive('/contact') 
+                  ? 'text-primary after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                  : 'text-foreground'
+              }`}
+            >
               Contact
             </Link>
           </nav>
@@ -157,42 +206,66 @@ export function Header() {
           <nav className="md:hidden py-4 space-y-4 border-t border-border">
             <Link
               href="/shop"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/shop') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Shop
             </Link>
             <Link
               href="/customise"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/customise') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Customize
             </Link>
             <Link
               href="/corporate"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/corporate') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Corporate Gifting
             </Link>
             <Link
               href="/bulk-calculator"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/bulk-calculator') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Bulk Calculator
             </Link>
             <Link
               href="/about"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/about') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="block text-sm font-medium hover:text-primary text-foreground"
+              className={`block text-sm font-medium hover:text-primary transition-colors ${
+                isActive('/contact') 
+                  ? 'text-primary font-bold border-l-4 border-primary pl-3' 
+                  : 'text-foreground pl-4'
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
