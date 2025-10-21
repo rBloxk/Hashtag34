@@ -66,6 +66,7 @@ export default function SignupPage() {
     try {
       await signUp(formData.email, formData.password, formData.fullName, formData.phone);
       toast.success('Account created successfully! Please check your email to verify your account before logging in.');
+      setLoading(false);
       // Redirect to login page after successful signup
       setTimeout(() => {
         router.push('/auth/login');

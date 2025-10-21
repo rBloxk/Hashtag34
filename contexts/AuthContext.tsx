@@ -149,31 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) throw error;
 
-    // Check if user was created (sometimes Supabase returns success but user is null if email confirmation is required)
-    if (data.user) {
-      // Create profile - only if user is confirmed or email confirmation is disabled
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: data.user.id,
-            email: data.user.email!,
-            full_name: fullName,
-            phone: phone || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]);
-
-      if (profileError) {
-        // If profile already exists, that's okay (might happen on retry)
-        if (!profileError.message.includes('duplicate key')) {
-          throw profileError;
-        }
-      }
-    }
-
-    // Return success - user needs to verify email
+    // Don't create profile here - it will be created during email verification callback
+    // This prevents RLS policy violations during signup
     return;
   };
 
