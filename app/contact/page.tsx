@@ -34,7 +34,7 @@ export default function ContactPage() {
               </div>
               <h3 className="text-xl font-semibold mb-3 text-foreground">Call Us</h3>
               <a href="tel:+911234567890" className="text-muted-foreground hover:text-primary transition-colors text-lg">
-                +91 123 456 7890
+                +91 9449 18 3434
               </a>
             </Card>
 
@@ -60,7 +60,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-border">
                   <span className="text-muted-foreground">Saturday</span>
-                  <span className="font-semibold text-foreground">10:00 AM - 4:00 PM</span>
+                  <span className="font-semibold text-foreground">10:00 AM - 6:00 PM</span>
                 </div>
                 <div className="flex justify-between items-center py-3">
                   <span className="text-muted-foreground">Sunday</span>

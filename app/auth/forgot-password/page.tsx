@@ -21,8 +21,13 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
+      // Use production URL for password reset redirects
+      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password`
+        : 'https://hashtag34.com/auth/reset-password';
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;

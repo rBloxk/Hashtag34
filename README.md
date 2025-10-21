@@ -2,7 +2,7 @@
 
 **E-commerce platform for custom t-shirts, hoodies, and corporate gifting solutions.**
 
-Live Site: [https://hashtag34.vercel.app](https://hashtag34.vercel.app)
+Live Site: [https://hashtag34.com](https://hashtag34.com)
 
 ---
 
@@ -28,7 +28,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # Site URL
-NEXT_PUBLIC_SITE_URL=https://hashtag34.vercel.app
+NEXT_PUBLIC_SITE_URL=https://hashtag34.com
 
 # Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -46,7 +46,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 ### 2. Add Redirect URLs
 - Dashboard → Authentication → URL Configuration
-- Add: `https://hashtag34.vercel.app/auth/callback`
+- Add: `https://hashtag34.com/auth/callback`
 
 ---
 
@@ -57,7 +57,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 - Developers → API keys
 
 ### 2. Create Webhook
-- URL: `https://hashtag34.vercel.app/api/webhooks/stripe`
+- URL: `https://hashtag34.com/api/webhooks/stripe`
 - Events: `checkout.session.completed`, `payment_intent.payment_failed`
 
 ---

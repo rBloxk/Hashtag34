@@ -89,7 +89,7 @@ export default function LoginPage() {
       // Use production URL for email verification redirects
       const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
         ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-        : 'https://hashtag34.vercel.app/auth/callback';
+        : 'https://hashtag34.com/auth/callback';
       
       await supabase.auth.resend({
         type: 'signup',
