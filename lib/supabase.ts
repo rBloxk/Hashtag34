@@ -85,6 +85,7 @@ export type Product = {
   category: string;
   base_price: number;
   base_image_url: string | null;
+  image_urls: string[] | null; // Array of image URLs for multiple product images
   available_colors: string[];
   available_sizes: string[];
   is_customizable: boolean;

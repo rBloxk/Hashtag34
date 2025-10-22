@@ -11,6 +11,11 @@ import { ConditionalLayout } from '@/components/ConditionalLayout';
 export const metadata: Metadata = {
   title: 'Hashtag34 Stories - Custom T-Shirts & Corporate Gifting',
   description: 'Wear Your Story. Gift a Moment. Customizable t-shirts, hoodies, and corporate gifting solutions.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({

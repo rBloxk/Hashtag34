@@ -217,7 +217,13 @@ function ProductPageContent() {
           {/* Product Image Section */}
           <div className="space-y-4">
             <div className="aspect-square bg-card rounded-2xl overflow-hidden shadow-2xl border border-border">
-              {product.base_image_url ? (
+              {((product as any).image_urls && (product as any).image_urls.length > 0) ? (
+                <img
+                  src={(product as any).image_urls[0]}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                />
+              ) : product.base_image_url ? (
                 <img
                   src={product.base_image_url}
                   alt={product.name}
@@ -230,14 +236,14 @@ function ProductPageContent() {
               )}
             </div>
             
-            {/* Image Gallery Placeholder */}
+            {/* Image Gallery */}
             <div className="grid grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
+              {((product as any).image_urls && (product as any).image_urls.length > 0 ? (product as any).image_urls : [product.base_image_url]).slice(0, 4).map((imageUrl: string, i: number) => (
                 <div key={i} className="aspect-square bg-card rounded-lg border border-border overflow-hidden">
-                  {product.base_image_url ? (
+                  {imageUrl ? (
                     <img
-                      src={product.base_image_url}
-                      alt={`${product.name} view ${i}`}
+                      src={imageUrl}
+                      alt={`${product.name} view ${i + 1}`}
                       className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
                     />
                   ) : (

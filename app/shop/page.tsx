@@ -41,10 +41,24 @@ export default function ShopPage() {
 
   const categories = [
     { id: 'all', label: 'All Products' },
-    { id: 'men', label: 'Men' },
-    { id: 'women', label: 'Women' },
-    { id: 'gifting', label: 'Gifting' },
-    { id: 'corporate', label: 'Corporate' },
+    { id: 'Apparel & Fashion', label: '🧢 Apparel & Fashion' },
+    { id: 'Men\'s Apparel', label: '👔 Men\'s Apparel' },
+    { id: 'Women\'s Apparel', label: '👚 Women\'s Apparel' },
+    { id: 'Unisex & Custom Wear', label: '👕 Unisex & Custom Wear' },
+    { id: 'Gifting & Hampers', label: '🎁 Gifting & Hampers' },
+    { id: 'Chocolates & Sweets', label: '🍫 Chocolates & Sweets' },
+    { id: 'Mugs, Bottles & Drinkware', label: '☕ Mugs, Bottles & Drinkware' },
+    { id: 'Snack & Gourmet Hampers', label: '🍪 Snack & Gourmet Hampers' },
+    { id: 'Luxury Gift Sets', label: '🌸 Luxury Gift Sets' },
+    { id: 'Corporate Kits & Sets', label: '💼 Corporate Kits & Sets' },
+    { id: 'Employee Onboarding Kits', label: '👋 Employee Onboarding Kits' },
+    { id: 'Recognition & Reward Kits', label: '🏆 Recognition & Reward Kits' },
+    { id: 'Event & Conference Kits', label: '🎊 Event & Conference Kits' },
+    { id: 'Work-From-Home Kits', label: '🖥️ Work-From-Home Kits' },
+    { id: 'Custom Branding Solutions', label: '🖋️ Custom Branding Solutions' },
+    { id: 'Seasonal & Festive Collections', label: '🪄 Seasonal & Festive Collections' },
+    { id: 'Eco-Friendly & Sustainable Gifts', label: '♻️ Eco-Friendly & Sustainable Gifts' },
+    { id: 'Accessories & Essentials', label: '🏷️ Accessories & Essentials' },
   ];
 
   return (
@@ -91,8 +105,21 @@ export default function ShopPage() {
               <Link key={product.id} href={`/product/${product.slug}`}>
                 <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary bg-card h-full">
                   <CardContent className="p-4">
-                    <div className="aspect-square bg-secondary rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                      {product.base_image_url ? (
+                    <div className="aspect-square bg-secondary rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
+                      {((product as any).image_urls && (product as any).image_urls.length > 0) ? (
+                        <>
+                          <img
+                            src={(product as any).image_urls[0]}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          {(product as any).image_urls.length > 1 && (
+                            <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                              +{(product as any).image_urls.length - 1}
+                            </div>
+                          )}
+                        </>
+                      ) : product.base_image_url ? (
                         <img
                           src={product.base_image_url}
                           alt={product.name}

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -156,12 +157,21 @@ function AdminDashboardContent() {
     availableSizes: [] as string[],
     isCustomizable: false,
     isActive: true,
-    imageUrl: ''
+    imageUrls: ['', '', '', ''] as string[]
   });
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+
+  // Predefined options for colors and sizes
+  const predefinedColors = [
+    'Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Gray', 'Navy', 'Maroon', 'Teal', 'Cream', 'Beige', 'Khaki', 'Burgundy', 'Royal Blue', 'Forest Green', 'Coral', 'Lavender', 'Turquoise', 'Gold', 'Silver'
+  ];
+
+  const predefinedSizes = [
+    'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '28', '30', '32', '34', '36', '38', '40', '42', '44', '46', '48', '50', '52', '54', '56', '58', '60', '62', '64', '66', '68', '70', '72', '74', '76', '78', '80', '82', '84', '86', '88', '90', '92', '94', '96', '98', '100', '102', '104', '106', '108', '110', '112', '114', '116', '118', '120', '122', '124', '126', '128', '130', '132', '134', '136', '138', '140', '142', '144', '146', '148', '150', '152', '154', '156', '158', '160', '162', '164', '166', '168', '170', '172', '174', '176', '178', '180', '182', '184', '186', '188', '190', '192', '194', '196', '198', '200'
+  ];
 
   // Check if user is admin
   useEffect(() => {
@@ -490,7 +500,10 @@ function AdminDashboardContent() {
     }
 
     try {
-      const imageUrl = productForm.imageUrl?.trim() || '/images/products/placeholder.png';
+      // Filter out empty image URLs and ensure at least one image
+      const validImageUrls = productForm.imageUrls.filter(url => url.trim() !== '');
+      const imageUrls = validImageUrls.length > 0 ? validImageUrls : ['/images/products/placeholder.png'];
+      const baseImageUrl = imageUrls[0];
 
       const { data, error} = await supabase
         .from('products')
@@ -500,8 +513,8 @@ function AdminDashboardContent() {
           description: productForm.description || '',
           category: productForm.category,
           base_price: parseFloat(productForm.basePrice),
-          base_image_url: imageUrl,
-          image_urls: [imageUrl],
+          base_image_url: baseImageUrl,
+          image_urls: imageUrls,
           available_colors: productForm.availableColors,
           available_sizes: productForm.availableSizes,
           is_customizable: productForm.isCustomizable,
@@ -525,7 +538,7 @@ function AdminDashboardContent() {
         availableSizes: [],
         isCustomizable: false,
         isActive: true,
-        imageUrl: ''
+        imageUrls: ['', '', '', '']
       });
 
       toast.success('Product added successfully!');
@@ -537,6 +550,12 @@ function AdminDashboardContent() {
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
+    // Ensure we have 4 image slots, filling empty ones with empty strings
+    const imageUrls = [...(product.image_urls || [])];
+    while (imageUrls.length < 4) {
+      imageUrls.push('');
+    }
+    
     setProductForm({
       name: product.name,
       description: product.description,
@@ -546,7 +565,7 @@ function AdminDashboardContent() {
       availableSizes: product.available_sizes,
       isCustomizable: product.is_customizable,
       isActive: product.is_active,
-      imageUrl: product.base_image_url
+      imageUrls: imageUrls.slice(0, 4)
     });
   };
 
@@ -554,7 +573,10 @@ function AdminDashboardContent() {
     if (!editingProduct) return;
 
     try {
-      const imageUrl = productForm.imageUrl?.trim() || editingProduct.base_image_url;
+      // Filter out empty image URLs and ensure at least one image
+      const validImageUrls = productForm.imageUrls.filter(url => url.trim() !== '');
+      const imageUrls = validImageUrls.length > 0 ? validImageUrls : [editingProduct.base_image_url];
+      const baseImageUrl = imageUrls[0];
 
       const { error } = await supabase
         .from('products')
@@ -564,8 +586,8 @@ function AdminDashboardContent() {
           description: productForm.description || '',
           category: productForm.category,
           base_price: parseFloat(productForm.basePrice),
-          base_image_url: imageUrl,
-          image_urls: [imageUrl],
+          base_image_url: baseImageUrl,
+          image_urls: imageUrls,
           available_colors: productForm.availableColors,
           available_sizes: productForm.availableSizes,
           is_customizable: productForm.isCustomizable,
@@ -591,7 +613,7 @@ function AdminDashboardContent() {
         availableSizes: [],
         isCustomizable: false,
         isActive: true,
-        imageUrl: ''
+        imageUrls: ['', '', '', '']
       });
 
       toast.success('Product updated successfully!');
@@ -771,9 +793,24 @@ function AdminDashboardContent() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="Apparel">Apparel</SelectItem>
-                        <SelectItem value="Gifts">Gifts</SelectItem>
-                        <SelectItem value="Corporate">Corporate</SelectItem>
+                        <SelectItem value="Apparel & Fashion">🧢 Apparel & Fashion</SelectItem>
+                        <SelectItem value="Men's Apparel">👔 Men's Apparel</SelectItem>
+                        <SelectItem value="Women's Apparel">👚 Women's Apparel</SelectItem>
+                        <SelectItem value="Unisex & Custom Wear">👕 Unisex & Custom Wear</SelectItem>
+                        <SelectItem value="Gifting & Hampers">🎁 Gifting & Hampers</SelectItem>
+                        <SelectItem value="Chocolates & Sweets">🍫 Chocolates & Sweets</SelectItem>
+                        <SelectItem value="Mugs, Bottles & Drinkware">☕ Mugs, Bottles & Drinkware</SelectItem>
+                        <SelectItem value="Snack & Gourmet Hampers">🍪 Snack & Gourmet Hampers</SelectItem>
+                        <SelectItem value="Luxury Gift Sets">🌸 Luxury Gift Sets</SelectItem>
+                        <SelectItem value="Corporate Kits & Sets">💼 Corporate Kits & Sets</SelectItem>
+                        <SelectItem value="Employee Onboarding Kits">👋 Employee Onboarding Kits</SelectItem>
+                        <SelectItem value="Recognition & Reward Kits">🏆 Recognition & Reward Kits</SelectItem>
+                        <SelectItem value="Event & Conference Kits">🎊 Event & Conference Kits</SelectItem>
+                        <SelectItem value="Work-From-Home Kits">🖥️ Work-From-Home Kits</SelectItem>
+                        <SelectItem value="Custom Branding Solutions">🖋️ Custom Branding Solutions</SelectItem>
+                        <SelectItem value="Seasonal & Festive Collections">🪄 Seasonal & Festive Collections</SelectItem>
+                        <SelectItem value="Eco-Friendly & Sustainable Gifts">♻️ Eco-Friendly & Sustainable Gifts</SelectItem>
+                        <SelectItem value="Accessories & Essentials">🏷️ Accessories & Essentials</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -805,9 +842,24 @@ function AdminDashboardContent() {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Apparel">Apparel</SelectItem>
-                              <SelectItem value="Gifts">Gifts</SelectItem>
-                              <SelectItem value="Corporate">Corporate</SelectItem>
+                              <SelectItem value="Apparel & Fashion">🧢 Apparel & Fashion</SelectItem>
+                              <SelectItem value="Men's Apparel">👔 Men's Apparel</SelectItem>
+                              <SelectItem value="Women's Apparel">👚 Women's Apparel</SelectItem>
+                              <SelectItem value="Unisex & Custom Wear">👕 Unisex & Custom Wear</SelectItem>
+                              <SelectItem value="Gifting & Hampers">🎁 Gifting & Hampers</SelectItem>
+                              <SelectItem value="Chocolates & Sweets">🍫 Chocolates & Sweets</SelectItem>
+                              <SelectItem value="Mugs, Bottles & Drinkware">☕ Mugs, Bottles & Drinkware</SelectItem>
+                              <SelectItem value="Snack & Gourmet Hampers">🍪 Snack & Gourmet Hampers</SelectItem>
+                              <SelectItem value="Luxury Gift Sets">🌸 Luxury Gift Sets</SelectItem>
+                              <SelectItem value="Corporate Kits & Sets">💼 Corporate Kits & Sets</SelectItem>
+                              <SelectItem value="Employee Onboarding Kits">👋 Employee Onboarding Kits</SelectItem>
+                              <SelectItem value="Recognition & Reward Kits">🏆 Recognition & Reward Kits</SelectItem>
+                              <SelectItem value="Event & Conference Kits">🎊 Event & Conference Kits</SelectItem>
+                              <SelectItem value="Work-From-Home Kits">🖥️ Work-From-Home Kits</SelectItem>
+                              <SelectItem value="Custom Branding Solutions">🖋️ Custom Branding Solutions</SelectItem>
+                              <SelectItem value="Seasonal & Festive Collections">🪄 Seasonal & Festive Collections</SelectItem>
+                              <SelectItem value="Eco-Friendly & Sustainable Gifts">♻️ Eco-Friendly & Sustainable Gifts</SelectItem>
+                              <SelectItem value="Accessories & Essentials">🏷️ Accessories & Essentials</SelectItem>
                             </SelectContent>
                           </Select>
                   </div>
@@ -827,16 +879,38 @@ function AdminDashboardContent() {
                             required
                           />
                         </div>
-                        <div>
-                          <Label className="text-foreground">Image URL</Label>
-                          <Input
-                            type="url"
-                            value={productForm.imageUrl}
-                            onChange={(e) => setProductForm({...productForm, imageUrl: e.target.value})}
-                            className="bg-background border-border text-foreground"
-                            placeholder="https://example.com/image.jpg"
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">Enter image URL or leave blank for placeholder</p>
+                        <div className="col-span-2">
+                          <Label className="text-foreground">Product Images (Max 4)</Label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            {productForm.imageUrls.map((url, index) => (
+                              <div key={index} className="space-y-2">
+                                <Input
+                                  type="url"
+                                  value={url}
+                                  onChange={(e) => {
+                                    const newImageUrls = [...productForm.imageUrls];
+                                    newImageUrls[index] = e.target.value;
+                                    setProductForm({...productForm, imageUrls: newImageUrls});
+                                  }}
+                                  className="bg-background border-border text-foreground"
+                                  placeholder={`Image ${index + 1} URL (optional)`}
+                                />
+                                {url && (
+                                  <div className="w-full h-24 border border-border rounded-lg overflow-hidden bg-secondary">
+                                    <img
+                                      src={url}
+                                      alt={`Product preview ${index + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/images/products/placeholder.png';
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Enter up to 4 image URLs. First image will be the primary image.</p>
                         </div>
                       </div>
 
@@ -876,17 +950,35 @@ function AdminDashboardContent() {
                       {/* Colors and Sizes */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-foreground">Available Colors * (comma-separated)</Label>
-                          <Input
-                            value={productForm.availableColors.join(', ')}
-                            onChange={(e) => setProductForm({
-                              ...productForm,
-                              availableColors: e.target.value.split(',').map(c => c.trim()).filter(c => c)
-                            })}
-                            className="bg-background border-border text-foreground"
-                            placeholder="Red, Blue, Green"
-                            required
-                          />
+                          <Label className="text-foreground">Available Colors *</Label>
+                          <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-background">
+                            <div className="grid grid-cols-2 gap-2">
+                              {predefinedColors.map((color) => (
+                                <div key={color} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`color-${color}`}
+                                    checked={productForm.availableColors.includes(color)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setProductForm({
+                                          ...productForm,
+                                          availableColors: [...productForm.availableColors, color]
+                                        });
+                                      } else {
+                                        setProductForm({
+                                          ...productForm,
+                                          availableColors: productForm.availableColors.filter(c => c !== color)
+                                        });
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`color-${color}`} className="text-sm text-foreground cursor-pointer">
+                                    {color}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                           <div className="mt-2 flex flex-wrap gap-1">
                             {productForm.availableColors.map((color, idx) => (
                               <Badge key={idx} variant="outline" className="text-xs">
@@ -894,20 +986,39 @@ function AdminDashboardContent() {
                               </Badge>
                             ))}
                           </div>
+                          <p className="text-xs text-muted-foreground mt-1">Select colors from the list above</p>
                         </div>
 
                         <div>
-                          <Label className="text-foreground">Available Sizes * (comma-separated)</Label>
-                          <Input
-                            value={productForm.availableSizes.join(', ')}
-                            onChange={(e) => setProductForm({
-                              ...productForm,
-                              availableSizes: e.target.value.split(',').map(s => s.trim()).filter(s => s)
-                            })}
-                            className="bg-background border-border text-foreground"
-                            placeholder="S, M, L, XL"
-                            required
-                          />
+                          <Label className="text-foreground">Available Sizes *</Label>
+                          <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-background">
+                            <div className="grid grid-cols-3 gap-2">
+                              {predefinedSizes.map((size) => (
+                                <div key={size} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`size-${size}`}
+                                    checked={productForm.availableSizes.includes(size)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setProductForm({
+                                          ...productForm,
+                                          availableSizes: [...productForm.availableSizes, size]
+                                        });
+                                      } else {
+                                        setProductForm({
+                                          ...productForm,
+                                          availableSizes: productForm.availableSizes.filter(s => s !== size)
+                                        });
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`size-${size}`} className="text-sm text-foreground cursor-pointer">
+                                    {size}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                           <div className="mt-2 flex flex-wrap gap-1">
                             {productForm.availableSizes.map((size, idx) => (
                               <Badge key={idx} variant="outline" className="text-xs">
@@ -915,25 +1026,10 @@ function AdminDashboardContent() {
                               </Badge>
                             ))}
                           </div>
+                          <p className="text-xs text-muted-foreground mt-1">Select sizes from the list above</p>
                         </div>
                       </div>
 
-                      {/* Image Preview */}
-                      {productForm.imageUrl && (
-                        <div>
-                          <Label className="text-foreground">Image Preview</Label>
-                          <div className="mt-2 w-32 h-32 border border-border rounded-lg overflow-hidden bg-secondary">
-                            <img
-                              src={productForm.imageUrl}
-                              alt="Product preview"
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/products/placeholder.png';
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
 
                       <div className="flex gap-2">
                         {editingProduct ? (
@@ -963,11 +1059,21 @@ function AdminDashboardContent() {
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                              <img
-                                src={product.base_image_url || '/images/products/placeholder.png'}
-                                alt={product.name}
-                                className="w-16 h-16 object-cover rounded"
-                              />
+                              <div className="flex gap-1">
+                                {(product.image_urls || [product.base_image_url]).slice(0, 3).map((imageUrl, index) => (
+                                  <img
+                                    key={index}
+                                    src={imageUrl || '/images/products/placeholder.png'}
+                                    alt={`${product.name} ${index + 1}`}
+                                    className="w-12 h-12 object-cover rounded border"
+                                  />
+                                ))}
+                                {(product.image_urls || []).length > 3 && (
+                                  <div className="w-12 h-12 bg-secondary border rounded flex items-center justify-center text-xs text-muted-foreground">
+                                    +{(product.image_urls || []).length - 3}
+                                  </div>
+                                )}
+                              </div>
                   <div>
                                 <h3 className="font-semibold text-foreground">{product.name}</h3>
                                 <p className="text-sm text-muted-foreground">{product.description}</p>
