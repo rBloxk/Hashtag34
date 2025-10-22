@@ -86,12 +86,12 @@ export function Footer() {
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="mailto:hello@hashtag34stories.com" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="mailto:hello@hashtag34.com" className="text-muted-foreground hover:text-primary transition-colors">
                 <Mail className="h-5 w-5" />
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              hello@hashtag34stories.com
+              hello@hashtag34.com
             </p>
           </div>
         </div>

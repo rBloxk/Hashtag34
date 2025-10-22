@@ -218,7 +218,7 @@ export default function FAQPage() {
     {
       id: '25',
       question: 'How do I contact customer support?',
-      answer: 'You can reach us via email at hello@hashtag34stories.com, phone at +1 (555) 123-4567, or live chat on our website. We typically respond within 24 hours.',
+      answer: 'You can reach us via email at hello@hashtag34.com, phone at +91 9449 18 3434, or live chat on our website. We typically respond within 24 hours.',
       category: 'account',
       tags: ['support', 'contact', 'email', 'phone', 'chat']
     },
@@ -396,8 +396,8 @@ export default function FAQPage() {
                 </Button>
               </div>
               <div className="text-sm text-muted-foreground">
-                <p>📧 hello@hashtag34stories.com</p>
-                <p>📞 +1 (555) 123-4567</p>
+                <p>📧 hello@hashtag34.com</p>
+                <p>📞 +91 9449 18 3434</p>
                 <p>💬 Available 9 AM - 6 PM EST, Monday - Friday</p>
               </div>
             </CardContent>

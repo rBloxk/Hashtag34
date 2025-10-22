@@ -23,8 +23,8 @@ export default function ContactPage() {
                 <Mail className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-foreground">Email Us</h3>
-              <a href="mailto:hello@hashtag34stories.com" className="text-muted-foreground hover:text-primary transition-colors text-lg">
-                hello@hashtag34stories.com
+              <a href="mailto:hello@hashtag34.com" className="text-muted-foreground hover:text-primary transition-colors text-lg">
+                hello@hashtag34.com
               </a>
             </Card>
 
@@ -104,7 +104,7 @@ export default function ContactPage() {
               <a href="/corporate" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg font-medium transition-colors">
                 Corporate Gifting
               </a>
-              <a href="mailto:corporate@hashtag34stories.com" className="border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 rounded-lg font-medium transition-colors">
+              <a href="mailto:corporate@hashtag34.com" className="border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 rounded-lg font-medium transition-colors">
                 Email Corporate Team
               </a>
             </div>

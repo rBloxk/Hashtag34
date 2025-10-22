@@ -16,7 +16,7 @@ INSERT INTO profiles (
   updated_at
 ) VALUES (
   '00000000-0000-0000-0000-000000000001', -- Replace with actual admin user ID
-  'admin@hashtag34stories.com',
+  'admin@hashtag34.com',
   'Admin User',
   '+1 (555) 123-4567',
   true,

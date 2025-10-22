@@ -85,7 +85,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-background border-border text-foreground"
-                  placeholder="admin@hashtag34stories.com"
+                  placeholder="admin@hashtag34.com"
                   required
                 />
               </div>
@@ -130,7 +130,7 @@ export default function AdminLoginPage() {
           <Shield className="h-4 w-4 text-blue-500" />
           <AlertDescription className="text-blue-700">
             <strong>Demo Credentials:</strong><br />
-            Email: admin@hashtag34stories.com<br />
+            Email: admin@hashtag34.com<br />
             Password: admin123
           </AlertDescription>
         </Alert>

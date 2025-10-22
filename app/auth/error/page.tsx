@@ -147,7 +147,7 @@ export default function AuthErrorPage() {
 
             <div className="text-center text-sm text-muted-foreground">
               <p>If you continue to experience issues, please contact support:</p>
-              <p className="font-medium">hello@hashtag34stories.com</p>
+              <p className="font-medium">hello@hashtag34.com</p>
             </div>
           </CardContent>
         </Card>

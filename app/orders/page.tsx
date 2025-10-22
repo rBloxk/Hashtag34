@@ -377,7 +377,7 @@ function OrdersPageContent() {
       pdf.setFontSize(8);
       pdf.setTextColor(150, 150, 150);
       pdf.text('Thank you for your order!', 20, pageHeight - 20);
-      pdf.text('For support, contact us at support@hashtag34stories.com', 20, pageHeight - 15);
+      pdf.text('For support, contact us at support@hashtag34.com', 20, pageHeight - 15);
       pdf.text(`Generated on ${new Date().toLocaleDateString()}`, 20, pageHeight - 10);
       
       // Download the PDF
@@ -406,7 +406,7 @@ function OrdersPageContent() {
   };
 
   const emailSupport = () => {
-    const supportEmail = 'support@hashtag34stories.com'; // Replace with your actual support email
+    const supportEmail = 'support@hashtag34.com'; // Replace with your actual support email
     const subject = selectedOrder 
       ? `Support Request - Order #${selectedOrder.order_number}`
       : 'Support Request';
