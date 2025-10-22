@@ -151,7 +151,7 @@ function AdminDashboardContent() {
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
-    category: '',
+    categories: [] as string[],
     basePrice: '',
     availableColors: [] as string[],
     availableSizes: [] as string[],
@@ -171,6 +171,27 @@ function AdminDashboardContent() {
 
   const predefinedSizes = [
     'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '28', '30', '32', '34', '36', '38', '40', '42', '44', '46', '48', '50', '52', '54', '56', '58', '60', '62', '64', '66', '68', '70', '72', '74', '76', '78', '80', '82', '84', '86', '88', '90', '92', '94', '96', '98', '100', '102', '104', '106', '108', '110', '112', '114', '116', '118', '120', '122', '124', '126', '128', '130', '132', '134', '136', '138', '140', '142', '144', '146', '148', '150', '152', '154', '156', '158', '160', '162', '164', '166', '168', '170', '172', '174', '176', '178', '180', '182', '184', '186', '188', '190', '192', '194', '196', '198', '200'
+  ];
+
+  const predefinedCategories = [
+    'Apparel & Fashion',
+    'Men\'s Apparel',
+    'Women\'s Apparel',
+    'Unisex & Custom Wear',
+    'Gifting & Hampers',
+    'Chocolates & Sweets',
+    'Mugs, Bottles & Drinkware',
+    'Snack & Gourmet Hampers',
+    'Luxury Gift Sets',
+    'Corporate Kits & Sets',
+    'Employee Onboarding Kits',
+    'Recognition & Reward Kits',
+    'Event & Conference Kits',
+    'Work-From-Home Kits',
+    'Custom Branding Solutions',
+    'Seasonal & Festive Collections',
+    'Eco-Friendly & Sustainable Gifts',
+    'Accessories & Essentials'
   ];
 
   // Check if user is admin
@@ -482,8 +503,8 @@ function AdminDashboardContent() {
       toast.error('Product Name is required');
       return;
     }
-    if (!productForm.category) {
-      toast.error('Category is required');
+    if (productForm.categories.length === 0) {
+      toast.error('At least one category is required');
       return;
     }
     if (!productForm.basePrice || parseFloat(productForm.basePrice) <= 0) {
@@ -511,7 +532,7 @@ function AdminDashboardContent() {
           name: productForm.name,
           slug: productForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
           description: productForm.description || '',
-          category: productForm.category,
+          category: productForm.categories[0], // Use first selected category
           base_price: parseFloat(productForm.basePrice),
           base_image_url: baseImageUrl,
           image_urls: imageUrls,
@@ -532,7 +553,7 @@ function AdminDashboardContent() {
       setProductForm({
         name: '',
         description: '',
-        category: '',
+        categories: [],
         basePrice: '',
         availableColors: [],
         availableSizes: [],
@@ -559,7 +580,7 @@ function AdminDashboardContent() {
     setProductForm({
       name: product.name,
       description: product.description,
-      category: product.category,
+      categories: [product.category], // Convert single category to array
       basePrice: product.base_price.toString(),
       availableColors: product.available_colors,
       availableSizes: product.available_sizes,
@@ -584,7 +605,7 @@ function AdminDashboardContent() {
           name: productForm.name,
           slug: productForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
           description: productForm.description || '',
-          category: productForm.category,
+          category: productForm.categories[0], // Use first selected category
           base_price: parseFloat(productForm.basePrice),
           base_image_url: baseImageUrl,
           image_urls: imageUrls,
@@ -607,7 +628,7 @@ function AdminDashboardContent() {
       setProductForm({
         name: '',
         description: '',
-        category: '',
+        categories: [],
         basePrice: '',
         availableColors: [],
         availableSizes: [],
@@ -835,34 +856,45 @@ function AdminDashboardContent() {
                       required
                     />
                   </div>
-                  <div>
-                          <Label className="text-foreground">Category *</Label>
-                          <Select value={productForm.category} onValueChange={(value) => setProductForm({...productForm, category: value})}>
-                            <SelectTrigger className="bg-background border-border text-foreground">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Apparel & Fashion">🧢 Apparel & Fashion</SelectItem>
-                              <SelectItem value="Men's Apparel">👔 Men's Apparel</SelectItem>
-                              <SelectItem value="Women's Apparel">👚 Women's Apparel</SelectItem>
-                              <SelectItem value="Unisex & Custom Wear">👕 Unisex & Custom Wear</SelectItem>
-                              <SelectItem value="Gifting & Hampers">🎁 Gifting & Hampers</SelectItem>
-                              <SelectItem value="Chocolates & Sweets">🍫 Chocolates & Sweets</SelectItem>
-                              <SelectItem value="Mugs, Bottles & Drinkware">☕ Mugs, Bottles & Drinkware</SelectItem>
-                              <SelectItem value="Snack & Gourmet Hampers">🍪 Snack & Gourmet Hampers</SelectItem>
-                              <SelectItem value="Luxury Gift Sets">🌸 Luxury Gift Sets</SelectItem>
-                              <SelectItem value="Corporate Kits & Sets">💼 Corporate Kits & Sets</SelectItem>
-                              <SelectItem value="Employee Onboarding Kits">👋 Employee Onboarding Kits</SelectItem>
-                              <SelectItem value="Recognition & Reward Kits">🏆 Recognition & Reward Kits</SelectItem>
-                              <SelectItem value="Event & Conference Kits">🎊 Event & Conference Kits</SelectItem>
-                              <SelectItem value="Work-From-Home Kits">🖥️ Work-From-Home Kits</SelectItem>
-                              <SelectItem value="Custom Branding Solutions">🖋️ Custom Branding Solutions</SelectItem>
-                              <SelectItem value="Seasonal & Festive Collections">🪄 Seasonal & Festive Collections</SelectItem>
-                              <SelectItem value="Eco-Friendly & Sustainable Gifts">♻️ Eco-Friendly & Sustainable Gifts</SelectItem>
-                              <SelectItem value="Accessories & Essentials">🏷️ Accessories & Essentials</SelectItem>
-                            </SelectContent>
-                          </Select>
-                  </div>
+                  <div className="col-span-2">
+                          <Label className="text-foreground">Categories *</Label>
+                          <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-background">
+                            <div className="grid grid-cols-1 gap-2">
+                              {predefinedCategories.map((category) => (
+                                <div key={category} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`category-${category}`}
+                                    checked={productForm.categories.includes(category)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setProductForm({
+                                          ...productForm,
+                                          categories: [...productForm.categories, category]
+                                        });
+                                      } else {
+                                        setProductForm({
+                                          ...productForm,
+                                          categories: productForm.categories.filter(c => c !== category)
+                                        });
+                                      }
+                                    }}
+                                  />
+                                  <Label htmlFor={`category-${category}`} className="text-sm text-foreground cursor-pointer">
+                                    {category}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {productForm.categories.map((category, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {category}
+                              </Badge>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Select one or more categories. First selected will be the primary category.</p>
+                        </div>
                 </div>
 
                       {/* Additional Fields */}
