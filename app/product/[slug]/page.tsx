@@ -212,8 +212,8 @@ function ProductPageContent() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16">
           {/* Product Image Section */}
           <div className="space-y-4">
             <div className="aspect-square bg-card rounded-2xl overflow-hidden shadow-2xl border border-border">
@@ -237,7 +237,7 @@ function ProductPageContent() {
             </div>
             
             {/* Image Gallery */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {((product as any).image_urls && (product as any).image_urls.length > 0 ? (product as any).image_urls : [product.base_image_url]).slice(0, 4).map((imageUrl: string, i: number) => (
                 <div key={i} className="aspect-square bg-card rounded-lg border border-border overflow-hidden">
                   {imageUrl ? (
@@ -259,9 +259,9 @@ function ProductPageContent() {
           {/* Product Details Section */}
           <div className="space-y-8">
             {/* Product Header */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
                     {product.category}
                   </span>
@@ -280,15 +280,15 @@ function ProductPageContent() {
                 </div>
               </div>
               
-              <h1 className="text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
               
-              <div className="flex items-baseline space-x-3">
-                <span className="text-4xl font-bold text-primary">
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                <span className="text-3xl sm:text-4xl font-bold text-primary">
                   ₹{product.base_price}
                 </span>
-                <span className="text-lg text-muted-foreground line-through">
+                <span className="text-base sm:text-lg text-muted-foreground line-through">
                   ₹{(product.base_price * 1.2).toFixed(0)}
                 </span>
                 <span className="px-2 py-1 bg-destructive/10 text-destructive text-sm font-medium rounded">
@@ -307,7 +307,7 @@ function ProductPageContent() {
             )}
 
             {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="flex items-center space-x-3 p-4 bg-card rounded-lg border border-border">
                 <Truck className="w-5 h-5 text-primary" />
                 <div>
@@ -362,12 +362,12 @@ function ProductPageContent() {
                   <label className="text-lg font-semibold text-foreground">Size</label>
                   <button className="text-sm text-primary hover:underline">Size Guide</button>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
                   {product.available_sizes.map((size: string) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`p-4 rounded-xl font-semibold transition-all duration-200 border-2 ${
+                      className={`p-2 sm:p-4 rounded-xl font-semibold transition-all duration-200 border-2 text-sm sm:text-base ${
                         selectedSize === size
                           ? 'border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                           : 'border-border bg-card text-foreground hover:border-primary/50 hover:bg-primary/5'
@@ -389,7 +389,7 @@ function ProductPageContent() {
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 border-2 capitalize ${
+                      className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all duration-200 border-2 capitalize text-sm sm:text-base ${
                         selectedColor === color
                           ? 'border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                           : 'border-border bg-card text-foreground hover:border-primary/50 hover:bg-primary/5'

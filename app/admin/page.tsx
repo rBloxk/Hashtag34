@@ -702,20 +702,20 @@ function AdminDashboardContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-card">
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-primary">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Manage products, orders, and inventory</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">Admin Dashboard</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Manage products, orders, and inventory</p>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={loadDashboardData} variant="outline">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={loadDashboardData} variant="outline" className="w-full sm:w-auto">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Download className="h-4 w-4 mr-2" />
                 Export Data
               </Button>
@@ -723,7 +723,7 @@ function AdminDashboardContent() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <Card className="bg-card border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -799,7 +799,7 @@ function AdminDashboardContent() {
             </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Search and Filter */}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
                       <Input
                         placeholder="Search products..."
@@ -809,7 +809,7 @@ function AdminDashboardContent() {
                       />
                     </div>
                     <Select value={filterCategory} onValueChange={setFilterCategory}>
-                      <SelectTrigger className="w-48 bg-background border-border text-foreground">
+                      <SelectTrigger className="w-full sm:w-48 bg-background border-border text-foreground">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -845,7 +845,7 @@ function AdminDashboardContent() {
             </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Required Fields - Always Visible */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                   <div>
                           <Label className="text-foreground">Product Name *</Label>
                     <Input
@@ -856,7 +856,7 @@ function AdminDashboardContent() {
                       required
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div>
                           <Label className="text-foreground">Categories *</Label>
                           <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-background">
                             <div className="grid grid-cols-1 gap-2">
@@ -898,7 +898,7 @@ function AdminDashboardContent() {
                 </div>
 
                       {/* Additional Fields */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <div>
                           <Label className="text-foreground">Base Price (₹) *</Label>
                           <Input
@@ -911,9 +911,9 @@ function AdminDashboardContent() {
                             required
                           />
                         </div>
-                        <div className="col-span-2">
+                        <div>
                           <Label className="text-foreground">Product Images (Max 4)</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                             {productForm.imageUrls.map((url, index) => (
                               <div key={index} className="space-y-2">
                                 <Input
@@ -980,7 +980,7 @@ function AdminDashboardContent() {
                       </div>
 
                       {/* Colors and Sizes */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-foreground">Available Colors *</Label>
                           <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-background">
@@ -1088,9 +1088,9 @@ function AdminDashboardContent() {
                   <div className="space-y-4">
                     {filteredProducts.map((product) => (
                       <Card key={product.id} className="bg-card border-border">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 w-full sm:w-auto">
                               <div className="flex gap-1">
                                 {(product.image_urls || [product.base_image_url]).slice(0, 3).map((imageUrl, index) => (
                                   <img
@@ -1106,10 +1106,10 @@ function AdminDashboardContent() {
                                   </div>
                                 )}
                               </div>
-                  <div>
+                  <div className="flex-1">
                                 <h3 className="font-semibold text-foreground">{product.name}</h3>
                                 <p className="text-sm text-muted-foreground">{product.description}</p>
-                                <div className="flex gap-2 mt-1">
+                                <div className="flex flex-wrap gap-2 mt-1">
                                   <Badge variant="outline" className="text-xs">{product.category}</Badge>
                                   <Badge variant={product.is_active ? "default" : "secondary"} className="text-xs">
                                     {product.is_active ? 'Active' : 'Inactive'}
@@ -1120,17 +1120,20 @@ function AdminDashboardContent() {
                                 </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-primary">₹{product.base_price.toFixed(2)}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Colors: {product.available_colors?.length || 0} | 
-                                Sizes: {product.available_sizes?.length || 0}
-                              </p>
-                              <div className="flex gap-2 mt-2">
+                            <div className="flex flex-col sm:flex-col items-start sm:items-end gap-2 w-full sm:w-auto">
+                              <div className="text-left sm:text-right">
+                                <p className="font-semibold text-primary">₹{product.base_price.toFixed(2)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Colors: {product.available_colors?.length || 0} | 
+                                  Sizes: {product.available_sizes?.length || 0}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleEditProduct(product)}
+                                  className="flex-1 sm:flex-none"
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -1138,6 +1141,7 @@ function AdminDashboardContent() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleDeleteProduct(product.id)}
+                                  className="flex-1 sm:flex-none"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1230,7 +1234,7 @@ function AdminDashboardContent() {
                               </div>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                               <div>
                                 <h4 className="font-medium text-foreground mb-1">Product Interest</h4>
                                 <p className="text-sm text-muted-foreground">
@@ -1330,7 +1334,7 @@ function AdminDashboardContent() {
                 </CardHeader>
                 <CardContent>
                   {/* User Stats */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
                     <Card className="bg-secondary border-border">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -1470,7 +1474,7 @@ function AdminDashboardContent() {
               {analytics ? (
                 <>
                   {/* Key Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <Card className="bg-card border-border">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -1525,7 +1529,7 @@ function AdminDashboardContent() {
                   </div>
 
                   {/* Secondary Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <Card className="bg-card border-border">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -1592,7 +1596,7 @@ function AdminDashboardContent() {
                   </Card>
 
                   {/* Growth Charts */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <Card className="bg-card border-border">
                       <CardHeader>
                         <CardTitle className="text-primary">User Growth</CardTitle>

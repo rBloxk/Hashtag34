@@ -47,7 +47,7 @@ export default function Home() {
     <div>
       {/* Hero Carousel Section */}
       <section className="relative overflow-hidden">
-        <div className="relative h-[70vh] md:h-[80vh]">
+        <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh]">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
@@ -57,23 +57,23 @@ export default function Home() {
             >
               <div className="container mx-auto px-4 h-full flex items-center">
                 <div className="max-w-4xl mx-auto text-center text-white">
-                  <div className="text-8xl mb-6">{slide.image}</div>
-                  <h1 className="text-5xl md:text-7xl font-bold mb-6">
+                  <div className="text-4xl sm:text-6xl md:text-8xl mb-4 sm:mb-6">{slide.image}</div>
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
                     {slide.title}<br />
                     <span className="text-yellow-300">{slide.subtitle}</span>
                   </h1>
-                  <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90 px-4">
                     {slide.description}
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                     <Link href="/shop">
-                      <Button size="lg" className="bg-white hover:bg-gray-100 text-gray-900 px-8">
+                      <Button size="lg" className="bg-white hover:bg-gray-100 text-gray-900 px-6 sm:px-8 w-full sm:w-auto">
                         Start Shopping
-                        <ArrowRight className="ml-2 h-5 w-5" />
+                        <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </Link>
                     <Link href="/customise">
-                      <Button size="lg" variant="outline" className="px-8 border-white text-white hover:bg-white hover:text-gray-900">
+                      <Button size="lg" variant="outline" className="px-6 sm:px-8 border-white text-white hover:bg-white hover:text-gray-900 w-full sm:w-auto">
                         Design Your Own
                       </Button>
                     </Link>
@@ -134,15 +134,15 @@ export default function Home() {
       </section>
 
       {/* Popular Categories Section */}
-      <section className="py-20 bg-gradient-to-br from-background to-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background to-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               Popular Categories
             </h2>
-            <p className="text-muted-foreground">Discover our most loved product categories</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Discover our most loved product categories</p>
           </div>
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <Link href="/shop?category=men">
               <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary relative overflow-hidden">
                 <CardContent className="p-6">
@@ -208,15 +208,15 @@ export default function Home() {
       </section>
 
       {/* Shop by Business Needs Section */}
-      <section className="py-20 bg-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               Shop by Business Needs
             </h2>
-            <p className="text-muted-foreground">Tailored solutions for every business requirement</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Tailored solutions for every business requirement</p>
           </div>
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary">
               <CardContent className="p-6 text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -311,15 +311,15 @@ export default function Home() {
       </section>
 
       {/* Best Sellers Section */}
-      <section className="py-20 bg-gradient-to-br from-background to-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background to-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               Best Sellers
             </h2>
-            <p className="text-muted-foreground">Our most popular products loved by customers worldwide</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Our most popular products loved by customers worldwide</p>
           </div>
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary relative overflow-hidden">
               <CardContent className="p-6">
                 <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center relative">
@@ -404,13 +404,13 @@ export default function Home() {
       </section>
 
       {/* New Launches Slider Section */}
-      <section className="py-20 bg-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               New Launches
             </h2>
-            <p className="text-muted-foreground">Fresh designs and products just added to our collection</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Fresh designs and products just added to our collection</p>
           </div>
           <Carousel className="w-full">
             <CarouselContent className="-ml-2 md:-ml-4">
@@ -527,57 +527,57 @@ export default function Home() {
       </section>
 
       {/* Companies We Work With Section */}
-      <section className="py-20 bg-gradient-to-br from-background to-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background to-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               Trusted by Leading Companies
             </h2>
-            <p className="text-muted-foreground">We're proud to partner with these amazing organizations</p>
+            <p className="text-sm sm:text-base text-muted-foreground">We're proud to partner with these amazing organizations</p>
           </div>
           
           <div className="relative overflow-hidden">
-            <div className="flex animate-scroll space-x-16">
+            <div className="flex animate-scroll space-x-8 sm:space-x-12 md:space-x-16">
               {/* First set of logos */}
-              <div className="flex space-x-16 shrink-0">
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-gray-600">TechCorp</span>
+              <div className="flex space-x-8 sm:space-x-12 md:space-x-16 shrink-0">
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-gray-600">TechCorp</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-blue-600">StartupX</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-blue-600">StartupX</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-green-600">EcoBrand</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-green-600">EcoBrand</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-purple-600">InnovateLab</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-purple-600">InnovateLab</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-orange-600">GlobalCo</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-orange-600">GlobalCo</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-red-600">FutureTech</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-red-600">FutureTech</span>
                 </div>
               </div>
               {/* Duplicate set for seamless loop */}
-              <div className="flex space-x-16 shrink-0">
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-gray-600">TechCorp</span>
+              <div className="flex space-x-8 sm:space-x-12 md:space-x-16 shrink-0">
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-gray-600">TechCorp</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-blue-600">StartupX</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-blue-600">StartupX</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-green-600">EcoBrand</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-green-600">EcoBrand</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-purple-600">InnovateLab</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-purple-600">InnovateLab</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-orange-600">GlobalCo</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-orange-600">GlobalCo</span>
                 </div>
-                <div className="flex items-center justify-center w-42 h-16 bg-white rounded-lg shadow-sm">
-                  <span className="text-xl font-bold text-red-600">FutureTech</span>
+                <div className="flex items-center justify-center w-24 sm:w-32 md:w-40 h-12 sm:h-14 md:h-16 bg-white rounded-lg shadow-sm">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-red-600">FutureTech</span>
                 </div>
               </div>
             </div>
@@ -586,16 +586,16 @@ export default function Home() {
       </section>
 
       {/* Client Testimonials Section */}
-      <section className="py-20 bg-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
               What Our Clients Say
             </h2>
-            <p className="text-muted-foreground">Real feedback from satisfied customers</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Real feedback from satisfied customers</p>
           </div>
           
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <Card className="bg-card border-border hover:border-primary transition-colors">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
@@ -738,13 +738,13 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-br from-background to-card">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-background to-card">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6 text-foreground">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-foreground">
               How It Works
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-12">
               <div>
                 <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl mx-auto mb-4">
                   1

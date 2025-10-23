@@ -370,17 +370,17 @@ function ProfilePageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-card">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-primary mb-2">My Profile</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">My Profile</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your account information and preferences
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Profile Information */}
             <div className="lg:col-span-2">
               <Card className="bg-card border-border">
@@ -608,13 +608,13 @@ function ProfilePageContent() {
                                 {address.city}, {address.state} {address.pincode}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2 ml-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 sm:ml-4 mt-2 sm:mt-0">
                               {!address.is_default && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleSetDefaultAddress(address.id)}
-                                  className="text-xs"
+                                  className="text-xs w-full sm:w-auto"
                                 >
                                   <Star className="h-3 w-3 mr-1" />
                                   Set Default
@@ -624,7 +624,7 @@ function ProfilePageContent() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditAddress(address)}
-                                className="text-xs"
+                                className="text-xs w-full sm:w-auto"
                               >
                                 <Edit className="h-3 w-3 mr-1" />
                                 Edit
@@ -633,9 +633,10 @@ function ProfilePageContent() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteAddress(address.id)}
-                                className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                                className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-3 w-3 mr-1 sm:mr-0" />
+                                <span className="sm:hidden">Delete</span>
                               </Button>
                             </div>
                           </div>
@@ -651,7 +652,7 @@ function ProfilePageContent() {
                         {editingAddress ? 'Edit Address' : 'Add New Address'}
                       </h3>
                       <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-foreground">Full Name *</Label>
                             <Input
@@ -686,7 +687,7 @@ function ProfilePageContent() {
                           />
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div className="space-y-2">
                             <Label className="text-foreground">City *</Label>
                             <Input
