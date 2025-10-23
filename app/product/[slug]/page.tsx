@@ -461,7 +461,7 @@ function ProductPageContent() {
                 </Button>
               </div>
               
-              {!product.is_customizable && (
+              {/* {!product.is_customizable && (
                 <Button
                   size="lg"
                   variant="outline"
@@ -469,7 +469,7 @@ function ProductPageContent() {
                 >
                   Buy Now
                 </Button>
-              )}
+              )} */}
             </div>
 
             {/* Additional Info */}
