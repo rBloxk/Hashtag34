@@ -41,7 +41,14 @@ import {
   Package2,
   Clock,
   Target,
-  FileText
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Truck,
+  CheckCircle2,
+  X,
+  MessageSquare,
+  MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -71,6 +78,10 @@ interface Order {
   totalAmount: number;
   itemCount: number;
   createdAt: string;
+  shippingAddress?: any;
+  paymentStatus?: string;
+  notes?: string;
+  order_items?: any[];
 }
 
 interface CorporateEnquiry {
@@ -186,6 +197,12 @@ function AdminDashboardContent() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  
+  // Order management state
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const [editingOrderNotes, setEditingOrderNotes] = useState<{ [key: string]: string }>({});
+  const [updatingOrderStatus, setUpdatingOrderStatus] = useState<string | null>(null);
 
   // Predefined options for colors and sizes
   const predefinedColors = [
@@ -264,7 +281,11 @@ function AdminDashboardContent() {
           .from('orders')
           .select(`
             *,
-            profiles:user_id(email)
+            profiles:user_id(email),
+            order_items:order_items(
+              *,
+              products:product_id(id, name, base_image_url)
+            )
           `)
           .order('created_at', { ascending: false }),
         
@@ -299,12 +320,25 @@ function AdminDashboardContent() {
         id: order.id,
         orderNumber: order.order_number,
         customerEmail: order.profiles?.email || 'Unknown',
-        status: order.status,
-        totalAmount: order.total_amount,
-        itemCount: 0, // This would need to be calculated from order_items
-        createdAt: order.created_at
+        status: order.status || 'pending',
+        totalAmount: parseFloat(order.total_amount || 0),
+        itemCount: order.order_items?.length || 0,
+        createdAt: order.created_at,
+        shippingAddress: order.shipping_address,
+        paymentStatus: order.payment_status,
+        notes: order.notes,
+        order_items: order.order_items || []
       }));
       setOrders(formattedOrders);
+      
+      // Initialize order notes for editing
+      const notesMap: { [key: string]: string } = {};
+      formattedOrders.forEach((order: Order) => {
+        if (order.notes) {
+          notesMap[order.id] = order.notes;
+        }
+      });
+      setEditingOrderNotes(notesMap);
 
       // Handle enquiries
       if (enquiriesResult.error) throw enquiriesResult.error;
@@ -1198,30 +1232,410 @@ function AdminDashboardContent() {
             {/* Orders Tab */}
             <TabsContent value="orders" className="space-y-6">
               <Card className="bg-card border-border">
-            <CardHeader>
-                  <CardTitle className="text-primary">Order Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                    {orders.map((order) => (
-                      <Card key={order.id} className="bg-secondary border-border">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                      <div>
-                              <h3 className="font-semibold text-foreground">#{order.orderNumber}</h3>
-                              <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
-                              <p className="text-sm text-muted-foreground">{order.itemCount} items</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-primary">${order.totalAmount}</p>
-                              <Badge variant="outline" className="text-xs">{order.status}</Badge>
-                              <p className="text-sm text-muted-foreground">{order.createdAt}</p>
-                            </div>
-                      </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-primary">Order Management</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Manage and track all customer orders
+                      </p>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                        <SelectTrigger className="w-40">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Orders</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="received">Received</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="shipped">Shipped</SelectItem>
+                          <SelectItem value="delivered">Delivered</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {orders.length === 0 ? (
+                      <div className="text-center py-12">
+                        <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold text-foreground mb-2">No Orders Yet</h3>
+                        <p className="text-muted-foreground">
+                          Orders will appear here when customers place them.
+                        </p>
+                      </div>
+                    ) : (
+                      orders
+                        .filter(order => orderStatusFilter === 'all' || order.status === orderStatusFilter)
+                        .map((order) => {
+                          const isExpanded = expandedOrders.has(order.id);
+                          const orderNotes = editingOrderNotes[order.id] ?? order.notes ?? '';
+                          
+                          const getStatusColor = (status: string) => {
+                            switch (status.toLowerCase()) {
+                              case 'pending':
+                                return 'bg-yellow-500/10 text-yellow-500 border-yellow-500';
+                              case 'received':
+                                return 'bg-blue-500/10 text-blue-500 border-blue-500';
+                              case 'processing':
+                                return 'bg-purple-500/10 text-purple-500 border-purple-500';
+                              case 'shipped':
+                                return 'bg-indigo-500/10 text-indigo-500 border-indigo-500';
+                              case 'delivered':
+                                return 'bg-green-500/10 text-green-500 border-green-500';
+                              case 'cancelled':
+                                return 'bg-red-500/10 text-red-500 border-red-500';
+                              default:
+                                return 'bg-gray-500/10 text-gray-500 border-gray-500';
+                            }
+                          };
+
+                          const handleStatusUpdate = async (newStatus: string) => {
+                            setUpdatingOrderStatus(order.id);
+                            try {
+                              const { error } = await supabase
+                                .from('orders')
+                                .update({ 
+                                  status: newStatus,
+                                  updated_at: new Date().toISOString()
+                                })
+                                .eq('id', order.id);
+
+                              if (error) throw error;
+
+                              setOrders(prev => 
+                                prev.map(o => 
+                                  o.id === order.id 
+                                    ? { ...o, status: newStatus, createdAt: new Date().toISOString() }
+                                    : o
+                                )
+                              );
+                              toast.success(`Order status updated to ${newStatus}`);
+                            } catch (error: any) {
+                              toast.error('Failed to update order status');
+                              console.error('Error updating order status:', error);
+                            } finally {
+                              setUpdatingOrderStatus(null);
+                            }
+                          };
+
+                          const handleSaveNotes = async () => {
+                            try {
+                              const { error } = await supabase
+                                .from('orders')
+                                .update({ 
+                                  notes: orderNotes,
+                                  updated_at: new Date().toISOString()
+                                })
+                                .eq('id', order.id);
+
+                              if (error) throw error;
+
+                              setOrders(prev => 
+                                prev.map(o => 
+                                  o.id === order.id 
+                                    ? { ...o, notes: orderNotes }
+                                    : o
+                                )
+                              );
+                              toast.success('Notes saved successfully');
+                            } catch (error: any) {
+                              toast.error('Failed to save notes');
+                              console.error('Error saving notes:', error);
+                            }
+                          };
+
+                          return (
+                            <Card key={order.id} className="bg-secondary border-border">
+                              <CardContent className="p-6">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <h3 className="font-semibold text-foreground text-lg">
+                                        #{order.orderNumber}
+                                      </h3>
+                                      <Badge 
+                                        variant="outline" 
+                                        className={`text-xs ${getStatusColor(order.status)}`}
+                                      >
+                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                      </Badge>
+                                      {order.paymentStatus && (
+                                        <Badge variant="outline" className="text-xs">
+                                          Payment: {order.paymentStatus}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                      <div>
+                                        <span className="text-muted-foreground">Customer: </span>
+                                        <span className="text-foreground">{order.customerEmail}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted-foreground">Items: </span>
+                                        <span className="text-foreground">{order.itemCount}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted-foreground">Total: </span>
+                                        <span className="font-semibold text-primary">${order.totalAmount.toFixed(2)}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted-foreground">Date: </span>
+                                        <span className="text-foreground">
+                                          {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newExpanded = new Set(expandedOrders);
+                                        if (isExpanded) {
+                                          newExpanded.delete(order.id);
+                                        } else {
+                                          newExpanded.add(order.id);
+                                        }
+                                        setExpandedOrders(newExpanded);
+                                      }}
+                                    >
+                                      {isExpanded ? (
+                                        <>
+                                          <ChevronUp className="h-4 w-4 mr-1" />
+                                          Hide Details
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ChevronDown className="h-4 w-4 mr-1" />
+                                          View Details
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {/* Quick Actions */}
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                  {order.status === 'pending' && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      onClick={() => handleStatusUpdate('received')}
+                                      disabled={updatingOrderStatus === order.id}
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      {updatingOrderStatus === order.id ? (
+                                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                                      )}
+                                      Mark as Received
+                                    </Button>
+                                  )}
+                                  {order.status === 'received' && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      onClick={() => handleStatusUpdate('processing')}
+                                      disabled={updatingOrderStatus === order.id}
+                                      className="bg-purple-600 hover:bg-purple-700"
+                                    >
+                                      {updatingOrderStatus === order.id ? (
+                                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <Package className="h-4 w-4 mr-1" />
+                                      )}
+                                      Start Processing
+                                    </Button>
+                                  )}
+                                  {order.status === 'processing' && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      onClick={() => handleStatusUpdate('shipped')}
+                                      disabled={updatingOrderStatus === order.id}
+                                      className="bg-indigo-600 hover:bg-indigo-700"
+                                    >
+                                      {updatingOrderStatus === order.id ? (
+                                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <Truck className="h-4 w-4 mr-1" />
+                                      )}
+                                      Mark as Shipped
+                                    </Button>
+                                  )}
+                                  {order.status === 'shipped' && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      onClick={() => handleStatusUpdate('delivered')}
+                                      disabled={updatingOrderStatus === order.id}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      {updatingOrderStatus === order.id ? (
+                                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                      )}
+                                      Mark as Delivered
+                                    </Button>
+                                  )}
+                                  {(order.status === 'pending' || order.status === 'received' || order.status === 'processing') && (
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleStatusUpdate('cancelled')}
+                                      disabled={updatingOrderStatus === order.id}
+                                    >
+                                      {updatingOrderStatus === order.id ? (
+                                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <X className="h-4 w-4 mr-1" />
+                                      )}
+                                      Cancel Order
+                                    </Button>
+                                  )}
+                                </div>
+
+                                {/* Status Update Dropdown */}
+                                <div className="mb-4">
+                                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                                    Update Status
+                                  </Label>
+                                  <Select
+                                    value={order.status}
+                                    onValueChange={handleStatusUpdate}
+                                    disabled={updatingOrderStatus === order.id}
+                                  >
+                                    <SelectTrigger className="w-full sm:w-48">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">Pending</SelectItem>
+                                      <SelectItem value="received">Received</SelectItem>
+                                      <SelectItem value="processing">Processing</SelectItem>
+                                      <SelectItem value="shipped">Shipped</SelectItem>
+                                      <SelectItem value="delivered">Delivered</SelectItem>
+                                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* Expanded Details */}
+                                {isExpanded && (
+                                  <div className="mt-4 pt-4 border-t border-border space-y-4">
+                                    {/* Shipping Address */}
+                                    {order.shippingAddress && (
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                                          <Label className="text-sm font-medium text-foreground">
+                                            Shipping Address
+                                          </Label>
+                                        </div>
+                                        <div className="bg-background p-3 rounded border text-sm text-foreground">
+                                          {typeof order.shippingAddress === 'string' ? (
+                                            <p>{order.shippingAddress}</p>
+                                          ) : (
+                                            <div>
+                                              <p>{order.shippingAddress.full_name}</p>
+                                              <p>{order.shippingAddress.address}</p>
+                                              <p>
+                                                {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.pincode}
+                                              </p>
+                                              {order.shippingAddress.phone && (
+                                                <p className="mt-1">Phone: {order.shippingAddress.phone}</p>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Order Items */}
+                                    {order.order_items && order.order_items.length > 0 && (
+                                      <div>
+                                        <Label className="text-sm font-medium text-foreground mb-2 block">
+                                          Order Items
+                                        </Label>
+                                        <div className="space-y-2">
+                                          {order.order_items.map((item: any, index: number) => (
+                                            <div
+                                              key={index}
+                                              className="bg-background p-3 rounded border flex items-center justify-between"
+                                            >
+                                              <div>
+                                                <p className="text-sm font-medium text-foreground">
+                                                  {item.product?.name || 'Product'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                  Quantity: {item.quantity} | 
+                                                  Size: {item.size || 'N/A'} | 
+                                                  Color: {item.color || 'N/A'}
+                                                </p>
+                                                {item.customization && (
+                                                  <p className="text-xs text-muted-foreground mt-1">
+                                                    Customized: Yes
+                                                  </p>
+                                                )}
+                                              </div>
+                                              <p className="text-sm font-semibold text-primary">
+                                                ${(item.price * item.quantity).toFixed(2)}
+                                              </p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Notes Section */}
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                        <Label className="text-sm font-medium text-foreground">
+                                          Order Notes
+                                        </Label>
+                                      </div>
+                                      <Textarea
+                                        value={orderNotes}
+                                        onChange={(e) => setEditingOrderNotes({
+                                          ...editingOrderNotes,
+                                          [order.id]: e.target.value
+                                        })}
+                                        placeholder="Add notes about this order..."
+                                        className="bg-background border-border text-foreground min-h-[100px]"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleSaveNotes}
+                                        className="mt-2"
+                                      >
+                                        <Save className="h-4 w-4 mr-1" />
+                                        Save Notes
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          );
+                        })
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
