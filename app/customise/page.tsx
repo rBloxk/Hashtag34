@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
@@ -38,9 +39,12 @@ import {
   Image as ImageIcon,
   Shapes,
   PaintBucket,
-  Wand2
+  Wand2,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface DesignElement {
   id: string;
@@ -103,10 +107,15 @@ function CustomizePageContent() {
   const [previewView, setPreviewView] = useState<'front' | 'back' | '3d'>('3d');
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [clientInstructions, setClientInstructions] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   const [rotation3D, setRotation3D] = useState(0);
   const [isAutoRotate, setIsAutoRotate] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
   const [zoom, setZoom] = useState(100);
@@ -114,6 +123,27 @@ function CustomizePageContent() {
     isDragging: false,
     elementId: null,
     offset: { x: 0, y: 0 }
+  });
+  const resizeRef = useRef<{ 
+    isResizing: boolean; 
+    elementId: string | null; 
+    handle: string | null;
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    startElementX: number;
+    startElementY: number;
+  }>({
+    isResizing: false,
+    elementId: null,
+    handle: null,
+    startX: 0,
+    startY: 0,
+    startWidth: 0,
+    startHeight: 0,
+    startElementX: 0,
+    startElementY: 0
   });
 
   const productColors = [
@@ -281,30 +311,87 @@ function CustomizePageContent() {
   };
 
   const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!dragRef.current.isDragging || !dragRef.current.elementId) return;
-    
-    const container = document.querySelector('[data-preview-container]')?.getBoundingClientRect();
-    if (!container) return;
-    
-    let newX = e.clientX - container.left - dragRef.current.offset.x;
-    let newY = e.clientY - container.top - dragRef.current.offset.y;
-    
-    // Snap to grid if enabled
-    if (snapToGrid) {
-      const gridSize = 10;
-      newX = Math.round(newX / gridSize) * gridSize;
-      newY = Math.round(newY / gridSize) * gridSize;
+    // Handle dragging
+    if (dragRef.current.isDragging && dragRef.current.elementId) {
+      const container = document.querySelector('[data-preview-container]')?.getBoundingClientRect();
+      if (!container) return;
+      
+      let newX = e.clientX - container.left - dragRef.current.offset.x;
+      let newY = e.clientY - container.top - dragRef.current.offset.y;
+      
+      // Snap to grid if enabled
+      if (snapToGrid) {
+        const gridSize = 10;
+        newX = Math.round(newX / gridSize) * gridSize;
+        newY = Math.round(newY / gridSize) * gridSize;
+      }
+      
+      // Constrain to bounds
+      const element = designElements.find(el => el.id === dragRef.current.elementId);
+      if (element) {
+        newX = Math.max(0, Math.min(newX, container.width - element.width));
+        newY = Math.max(0, Math.min(newY, container.height - element.height));
+      }
+      
+      updateElement(dragRef.current.elementId, { x: newX, y: newY });
+      return;
     }
     
-    // Constrain to bounds
-    const element = designElements.find(el => el.id === dragRef.current.elementId);
-    if (element) {
-      newX = Math.max(0, Math.min(newX, container.width - element.width));
-      newY = Math.max(0, Math.min(newY, container.height - element.height));
+    // Handle resizing
+    if (resizeRef.current.isResizing && resizeRef.current.elementId && resizeRef.current.handle) {
+      const container = document.querySelector('[data-preview-container]')?.getBoundingClientRect();
+      if (!container) return;
+      
+      const deltaX = (e.clientX - container.left - resizeRef.current.startX) / (zoom / 100);
+      const deltaY = (e.clientY - container.top - resizeRef.current.startY) / (zoom / 100);
+      
+      let newWidth = resizeRef.current.startWidth;
+      let newHeight = resizeRef.current.startHeight;
+      let newX = resizeRef.current.startElementX;
+      let newY = resizeRef.current.startElementY;
+      
+      const handle = resizeRef.current.handle;
+      const minSize = 20; // Minimum size
+      
+      // Calculate new dimensions based on handle
+      if (handle.includes('e')) { // East (right)
+        newWidth = Math.max(minSize, resizeRef.current.startWidth + deltaX);
+      }
+      if (handle.includes('w')) { // West (left)
+        newWidth = Math.max(minSize, resizeRef.current.startWidth - deltaX);
+        newX = resizeRef.current.startElementX + (resizeRef.current.startWidth - newWidth);
+      }
+      if (handle.includes('s')) { // South (bottom)
+        newHeight = Math.max(minSize, resizeRef.current.startHeight + deltaY);
+      }
+      if (handle.includes('n')) { // North (top)
+        newHeight = Math.max(minSize, resizeRef.current.startHeight - deltaY);
+        newY = resizeRef.current.startElementY + (resizeRef.current.startHeight - newHeight);
+      }
+      
+      // Constrain to container bounds
+      const maxWidth = container.width / (zoom / 100) - newX;
+      const maxHeight = container.height / (zoom / 100) - newY;
+      newWidth = Math.min(newWidth, maxWidth);
+      newHeight = Math.min(newHeight, maxHeight);
+      
+      // Snap to grid if enabled
+      if (snapToGrid) {
+        const gridSize = 10;
+        newWidth = Math.round(newWidth / gridSize) * gridSize;
+        newHeight = Math.round(newHeight / gridSize) * gridSize;
+        newX = Math.round(newX / gridSize) * gridSize;
+        newY = Math.round(newY / gridSize) * gridSize;
+      }
+      
+      updateElement(resizeRef.current.elementId, { 
+        width: Math.max(minSize, newWidth), 
+        height: Math.max(minSize, newHeight),
+        x: Math.max(0, newX),
+        y: Math.max(0, newY)
+      });
     }
-    
-    updateElement(dragRef.current.elementId, { x: newX, y: newY });
-  }, [snapToGrid, designElements]);
+  }, [snapToGrid, designElements, zoom]);
 
   const handleMouseUp = React.useCallback(() => {
     if (dragRef.current.isDragging) {
@@ -315,13 +402,70 @@ function CustomizePageContent() {
         offset: { x: 0, y: 0 }
       };
     }
+    if (resizeRef.current.isResizing) {
+      setIsResizing(false);
+      setResizeHandle(null);
+      resizeRef.current = {
+        isResizing: false,
+        elementId: null,
+        handle: null,
+        startX: 0,
+        startY: 0,
+        startWidth: 0,
+        startHeight: 0,
+        startElementX: 0,
+        startElementY: 0
+      };
+    }
   }, []);
 
+  const handleResizeStart = (e: React.MouseEvent, elementId: string, handle: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const element = designElements.find(el => el.id === elementId);
+    if (!element || element.locked) return;
+    
+    setIsResizing(true);
+    setResizeHandle(handle);
+    setSelectedElement(elementId);
+    
+    const container = document.querySelector('[data-preview-container]')?.getBoundingClientRect();
+    if (container) {
+      resizeRef.current = {
+        isResizing: true,
+        elementId,
+        handle,
+        startX: e.clientX - container.left,
+        startY: e.clientY - container.top,
+        startWidth: element.width,
+        startHeight: element.height,
+        startElementX: element.x,
+        startElementY: element.y
+      };
+    }
+  };
+
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'grabbing';
+      if (isDragging) {
+        document.body.style.cursor = 'grabbing';
+      } else if (isResizing) {
+        // Set cursor based on resize handle
+        const cursorMap: { [key: string]: string } = {
+          'nw': 'nw-resize',
+          'ne': 'ne-resize',
+          'sw': 'sw-resize',
+          'se': 'se-resize',
+          'n': 'n-resize',
+          's': 's-resize',
+          'e': 'e-resize',
+          'w': 'w-resize'
+        };
+        document.body.style.cursor = cursorMap[resizeHandle || 'se'] || 'se-resize';
+      }
       document.body.style.userSelect = 'none';
     }
 
@@ -331,7 +475,7 @@ function CustomizePageContent() {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, isResizing, resizeHandle, handleMouseMove, handleMouseUp]);
 
   const updateElement = (id: string, updates: Partial<DesignElement>) => {
     setDesignElements(elements =>
@@ -388,6 +532,139 @@ function CustomizePageContent() {
     });
   };
 
+  const captureCanvasAsImage = async (format: 'png' | 'pdf'): Promise<Blob | null> => {
+    if (!previewContainerRef.current) {
+      console.warn('Preview container ref not available');
+      return null;
+    }
+
+    try {
+      const container = previewContainerRef.current;
+      
+      // Wait a bit for any animations to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Store original styles to restore later
+      const elementsToHide: Array<{ element: HTMLElement; originalDisplay: string; originalOpacity: string }> = [];
+      
+      // Hide resize handles and selection indicators temporarily
+      const resizeHandles = container.querySelectorAll('[class*="cursor-nw-resize"], [class*="cursor-ne-resize"], [class*="cursor-sw-resize"], [class*="cursor-se-resize"], [class*="cursor-n-resize"], [class*="cursor-s-resize"], [class*="cursor-e-resize"], [class*="cursor-w-resize"]');
+      const sizeDisplays = container.querySelectorAll('[class*="absolute"][class*="-top-8"]');
+      const badges = container.querySelectorAll('[class*="Badge"]');
+      
+      // Hide UI elements
+      resizeHandles.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        elementsToHide.push({
+          element: htmlEl,
+          originalDisplay: htmlEl.style.display,
+          originalOpacity: htmlEl.style.opacity
+        });
+        htmlEl.style.display = 'none';
+      });
+      
+      sizeDisplays.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        elementsToHide.push({
+          element: htmlEl,
+          originalDisplay: htmlEl.style.display,
+          originalOpacity: htmlEl.style.opacity
+        });
+        htmlEl.style.display = 'none';
+      });
+
+      badges.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (htmlEl.textContent?.includes('View') || htmlEl.textContent?.includes('Element')) {
+          elementsToHide.push({
+            element: htmlEl,
+            originalDisplay: htmlEl.style.display,
+            originalOpacity: htmlEl.style.opacity
+          });
+          htmlEl.style.display = 'none';
+        }
+      });
+
+      // Capture the canvas with optimized settings
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#ffffff',
+        scale: 1.5, // Reduced from 2 for faster processing
+        logging: false,
+        useCORS: true,
+        allowTaint: true, // Changed to true to allow cross-origin images
+        width: container.offsetWidth,
+        height: container.offsetHeight,
+        windowWidth: container.scrollWidth,
+        windowHeight: container.scrollHeight,
+        removeContainer: false,
+        imageTimeout: 5000, // 5 second timeout for images
+      });
+
+      // Restore UI elements
+      elementsToHide.forEach(({ element, originalDisplay, originalOpacity }) => {
+        element.style.display = originalDisplay;
+        element.style.opacity = originalOpacity;
+      });
+
+      if (format === 'png') {
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              console.error('Failed to convert canvas to blob');
+              resolve(null);
+            } else {
+              resolve(blob);
+            }
+          }, 'image/png', 0.9); // Slightly lower quality for faster processing
+        });
+      } else {
+        // Convert to PDF
+        const imgData = canvas.toDataURL('image/png', 0.9);
+        const pdf = new jsPDF({
+          orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        const pdfBlob = pdf.output('blob');
+        return pdfBlob;
+      }
+    } catch (error) {
+      console.error('Error capturing canvas:', error);
+      return null;
+    }
+  };
+
+  const uploadDesignImage = async (blob: Blob, designId: string, format: 'png' | 'pdf'): Promise<string | null> => {
+    try {
+      const fileName = `${designId}-${Date.now()}.${format}`;
+      const filePath = `designs/${user?.id}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('design-images')
+        .upload(filePath, blob, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: format === 'png' ? 'image/png' : 'application/pdf'
+        });
+
+      if (error) {
+        console.error('Error uploading image:', error);
+        return null;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('design-images')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error in uploadDesignImage:', error);
+      return null;
+    }
+  };
+
   const addToCart = async () => {
     if (designElements.length === 0) {
       toast.error('Please add at least one design element');
@@ -400,8 +677,10 @@ function CustomizePageContent() {
       return;
     }
 
+    setIsSaving(true);
+
     try {
-      // 1. Save the design to the designs table
+      // 1. Save the design to the designs table first (to get the design ID)
       const designData = {
         elements: designElements,
         product: selectedProduct,
@@ -413,13 +692,24 @@ function CustomizePageContent() {
         timestamp: new Date().toISOString()
       };
 
+      // Validate product_id - must be a valid UUID or null
+      const isValidUUID = (str: string) => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(str);
+      };
+      
+      const productId = selectedProduct.id && isValidUUID(selectedProduct.id) 
+        ? selectedProduct.id 
+        : null;
+
       const { data: design, error: designError } = await supabase
         .from('designs')
         .insert({
           user_id: user.id,
-          product_id: selectedProduct.id || null, // Will need product ID
+          product_id: productId,
           design_data: designData,
-          preview_url: null, // Could be enhanced to save a canvas snapshot
+          preview_url: null,
+          client_instructions: clientInstructions.trim() || null,
           is_saved: true
         })
         .select()
@@ -427,11 +717,76 @@ function CustomizePageContent() {
 
       if (designError) {
         console.error('Error saving design:', designError);
-        toast.error('Failed to save design');
+        toast.error('Failed to save design: ' + designError.message);
+        setIsSaving(false);
         return;
       }
 
-      // 2. Add to cart with design_id
+      // 2. Capture and upload images (non-blocking - continue even if it fails)
+      toast.loading('Capturing design images...', { id: 'capturing' });
+
+      let pngUrl: string | null = null;
+      let pdfUrl: string | null = null;
+
+      try {
+        // Capture PNG with timeout
+        const pngPromise = captureCanvasAsImage('png');
+        const pngTimeout = new Promise<null>((resolve) => 
+          setTimeout(() => resolve(null), 10000) // 10 second timeout
+        );
+        const pngBlob = await Promise.race([pngPromise, pngTimeout]);
+
+        if (pngBlob) {
+          try {
+            pngUrl = await uploadDesignImage(pngBlob, design.id, 'png');
+          } catch (uploadError) {
+            console.error('Error uploading PNG:', uploadError);
+          }
+        }
+
+        // Capture PDF with timeout
+        const pdfPromise = captureCanvasAsImage('pdf');
+        const pdfTimeout = new Promise<null>((resolve) => 
+          setTimeout(() => resolve(null), 10000) // 10 second timeout
+        );
+        const pdfBlob = await Promise.race([pdfPromise, pdfTimeout]);
+
+        if (pdfBlob) {
+          try {
+            pdfUrl = await uploadDesignImage(pdfBlob, design.id, 'pdf');
+          } catch (uploadError) {
+            console.error('Error uploading PDF:', uploadError);
+          }
+        }
+
+        // Update design with image URLs (only if we have at least one)
+        if (pngUrl || pdfUrl) {
+          const { error: updateError } = await supabase
+            .from('designs')
+            .update({
+              png_image_url: pngUrl,
+              pdf_image_url: pdfUrl,
+              preview_url: pngUrl || pdfUrl // Use PNG as preview, or PDF if PNG not available
+            })
+            .eq('id', design.id);
+
+          if (updateError) {
+            console.error('Error updating design with images:', updateError);
+          }
+        }
+
+        if (pngUrl || pdfUrl) {
+          toast.success('Design saved with images!', { id: 'capturing' });
+        } else {
+          toast.warning('Design saved, but image capture timed out or failed', { id: 'capturing' });
+        }
+      } catch (error) {
+        console.error('Error in image capture process:', error);
+        toast.warning('Design saved, but image capture failed', { id: 'capturing' });
+        // Continue with the process even if image capture fails
+      }
+
+      // 4. Add to cart with design_id
       const customizationDetails = {
         designElements: designElements.length,
         customizationFee: 50,
@@ -442,7 +797,7 @@ function CustomizePageContent() {
         .from('cart_items')
         .insert({
           user_id: user.id,
-          product_id: selectedProduct.id || null,
+          product_id: productId,
           design_id: design.id,
           quantity: quantity,
           size: selectedProduct.size,
@@ -453,6 +808,7 @@ function CustomizePageContent() {
       if (cartError) {
         console.error('Error adding to cart:', cartError);
         toast.error('Failed to add to cart');
+        setIsSaving(false);
         return;
       }
 
@@ -460,11 +816,16 @@ function CustomizePageContent() {
         description: `${selectedProduct.name} (${selectedProduct.size}) x${quantity} with custom design`
       });
 
+      // Reset form
+      setClientInstructions('');
+      setIsSaving(false);
+
       // Optionally redirect to cart
       // router.push('/cart');
     } catch (error) {
       console.error('Error in addToCart:', error);
       toast.error('Something went wrong');
+      setIsSaving(false);
     }
   };
 
@@ -663,6 +1024,7 @@ function CustomizePageContent() {
               </CardHeader>
               <CardContent>
                 <div 
+                  ref={previewContainerRef}
                   className={`relative bg-gradient-to-br from-muted to-muted/50 rounded-xl p-8 min-h-[700px] flex items-center justify-center overflow-hidden ${
                     showGrid ? 'bg-grid-pattern' : ''
                   }`}
@@ -799,11 +1161,11 @@ function CustomizePageContent() {
                           <div
                             key={element.id}
                             className={`absolute transition-all duration-200 ${
-                              isDragging && dragRef.current.elementId === element.id 
-                                ? 'transition-none z-50 scale-105' 
+                              (isDragging && dragRef.current.elementId === element.id) || (isResizing && resizeRef.current.elementId === element.id)
+                                ? 'transition-none z-50' 
                                 : 'duration-300 ease-out'
                             } ${
-                              selectedElement === element.id ? 'outline-1 outline-dashed outline-primary/30' : ''
+                              selectedElement === element.id ? 'outline-2 outline-dashed outline-primary/50' : ''
                             }`}
                             style={{
                               left: element.x,
@@ -817,8 +1179,8 @@ function CustomizePageContent() {
                               zIndex: element.layer,
                               filter: element.shadow ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' : 'none'
                             }}
-                            onMouseDown={(e) => handleMouseDown(e, element.id)}
-                            onClick={() => !isDragging && setSelectedElement(element.id)}
+                            onMouseDown={(e) => !isResizing && handleMouseDown(e, element.id)}
+                            onClick={() => !isDragging && !isResizing && setSelectedElement(element.id)}
                           >
                             {element.type === 'text' ? (
                               <div
@@ -857,6 +1219,63 @@ function CustomizePageContent() {
                                   pointerEvents: 'none'
                                 }}
                               />
+                            )}
+                            
+                            {/* Resize Handles - Only show when selected and not locked */}
+                            {selectedElement === element.id && !element.locked && (
+                              <>
+                                {/* Corner handles */}
+                                <div
+                                  className="absolute -top-1 -left-1 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-nw-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'nw')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -top-1 -right-1 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-ne-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'ne')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -bottom-1 -left-1 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-sw-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'sw')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-se-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'se')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                
+                                {/* Edge handles */}
+                                <div
+                                  className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-n-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'n')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-s-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 's')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-w-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'w')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                <div
+                                  className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-primary border-2 border-white rounded-full cursor-e-resize pointer-events-auto z-50"
+                                  onMouseDown={(e) => handleResizeStart(e, element.id, 'e')}
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                                
+                                {/* Size Display */}
+                                <div
+                                  className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-primary/90 text-primary-foreground text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap z-50"
+                                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                >
+                                  {Math.round(element.width)} × {Math.round(element.height)} px
+                                </div>
+                              </>
                             )}
                           </div>
                         ))}
@@ -1109,6 +1528,46 @@ function CustomizePageContent() {
 
                     <Separator />
 
+                    {/* Size Controls */}
+                    <div>
+                      <Label className="text-sm mb-2 block">Size (px)</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Width</Label>
+                          <Input
+                            type="number"
+                            value={Math.round(element.width)}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 20;
+                              updateElement(element.id, { width: Math.max(20, value) });
+                            }}
+                            className="bg-background border-border mt-1"
+                            min={20}
+                            step={1}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Height</Label>
+                          <Input
+                            type="number"
+                            value={Math.round(element.height)}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 20;
+                              updateElement(element.id, { height: Math.max(20, value) });
+                            }}
+                            className="bg-background border-border mt-1"
+                            min={20}
+                            step={1}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Or drag the resize handles on the element
+                      </p>
+                    </div>
+
+                    <Separator />
+
                     <div>
                       <Label className="text-sm">Opacity: {Math.round(element.opacity * 100)}%</Label>
                       <Slider
@@ -1290,12 +1749,44 @@ function CustomizePageContent() {
                   </div>
                 </div>
 
+                <Separator />
+
+                {/* Client Instructions */}
+                <div>
+                  <Label className="text-sm">Client Instructions (Optional)</Label>
+                  <Textarea
+                    value={clientInstructions}
+                    onChange={(e) => setClientInstructions(e.target.value)}
+                    placeholder="Add any special instructions or notes for this design..."
+                    className="bg-background border-border mt-1 min-h-[100px]"
+                    rows={4}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Provide any specific instructions or requirements for your design
+                  </p>
+                </div>
+
+                <Separator />
+
                 <div className="space-y-2">
-                  <Button onClick={addToCart} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Cart
+                  <Button 
+                    onClick={addToCart} 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Saving Design...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Add to Cart
+                      </>
+                    )}
                   </Button>
-                  <Button onClick={toggleWishlist} variant="outline" className="w-full">
+                  <Button onClick={toggleWishlist} variant="outline" className="w-full" disabled={isSaving}>
                     <Heart className={`h-4 w-4 mr-2 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
                     {isInWishlist ? 'Remove from' : 'Add to'} Wishlist
                   </Button>

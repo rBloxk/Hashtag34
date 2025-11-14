@@ -7,6 +7,8 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/sonner';
 import { ConditionalLayout } from '@/components/ConditionalLayout';
+import { GoogleTagManager } from '@/components/GoogleTagManager';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
 export const metadata: Metadata = {
   title: 'Hashtag34 Stories - Custom T-Shirts & Corporate Gifting',
@@ -26,6 +28,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
+        <GoogleTagManager />
+        <GoogleAnalytics />
         <AuthProvider>
           <ConditionalLayout>
             {children}
